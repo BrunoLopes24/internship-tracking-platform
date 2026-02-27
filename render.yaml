@@ -1,0 +1,29 @@
+# Render Blueprint — Backend deployment
+# Deploy using: https://dashboard.render.com/select-repo
+
+services:
+  - type: web
+    name: controlo-estagio-api
+    runtime: node
+    region: frankfurt
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && node dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5001
+      - key: DATABASE_URL
+        fromDatabase:
+          name: controlo-estagio-db
+          property: connectionString
+      - key: TZ
+        value: Europe/Lisbon
+    healthCheckPath: /api/health
+
+databases:
+  - name: controlo-estagio-db
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: 16

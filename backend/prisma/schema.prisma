@@ -1,0 +1,109 @@
+// Prisma Schema — Controlo Estágio
+// PostgreSQL datasource compatible with both local Docker and Neon (production)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// Internship configuration — single-row table holding global settings
+model InternshipConfig {
+  id              String   @id @default(uuid())
+  startDate       String   @map("start_date")
+  requiredHours   Int      @default(640) @map("required_hours")
+  dailyHours      Float    @default(8.0) @map("daily_hours")
+  workingDays     String   @default("1,2,3,4,5") @map("working_days")
+  location        String?
+  studentName     String?  @map("student_name")
+  supervisorName  String?  @map("supervisor_name")
+  companyName     String?  @map("company_name")
+  courseName      String?  @map("course_name")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("internship_config")
+}
+
+/// Daily activity log entries
+model DailyLog {
+  id              String   @id @default(uuid())
+  logDate         String   @unique @map("log_date")
+  logType         String   @default("normal") @map("log_type")
+  startTime       String?  @map("start_time")
+  endTime         String?  @map("end_time")
+  lunchStart      String?  @map("lunch_start")
+  lunchEnd        String?  @map("lunch_end")
+  hoursCompleted  Float    @map("hours_completed")
+  company         String
+  tasksPerformed  String?  @map("tasks_performed")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  attachments     FileAttachment[]
+
+  @@index([logDate])
+  @@map("daily_logs")
+}
+
+/// File attachments linked to daily logs
+model FileAttachment {
+  id            String   @id @default(uuid())
+  filename      String
+  originalName  String   @map("original_name")
+  mimeType      String   @map("mime_type")
+  sizeBytes     Int      @map("size_bytes")
+  path          String
+  dailyLogId    String   @map("daily_log_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  dailyLog      DailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+
+  @@index([dailyLogId])
+  @@map("file_attachments")
+}
+
+/// System alerts and notifications
+model Alert {
+  id          String   @id @default(uuid())
+  alertType   String   @map("alert_type")
+  title       String
+  description String
+  dismissed   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([alertType])
+  @@map("alerts")
+}
+
+/// Generated reports (mid-term at 320h, final at 640h)
+model Report {
+  id              String   @id @default(uuid())
+  reportType      String   @map("report_type")
+  hoursAtCreation Int      @map("hours_at_creation")
+  content         String
+  exportedAsPdf   Boolean  @default(false) @map("exported_as_pdf")
+  pdfPath         String?  @map("pdf_path")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([reportType])
+  @@map("reports")
+}
+
+/// Backup metadata records
+model Backup {
+  id          String   @id @default(uuid())
+  backupName  String   @map("backup_name")
+  backupData  String   @map("backup_data")
+  sizeBytes   Int?     @map("size_bytes")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("backups")
+}

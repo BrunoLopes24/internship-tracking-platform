@@ -1,0 +1,91 @@
+# StageSync — Docker Compose
+# Compatible with both Docker and Podman (podman compose up --build)
+#
+# Services:
+#   db       — PostgreSQL 16 with persistent volume
+#   backend  — Express API with hot-reload (development)
+#   frontend — Vite dev server with hot-reload (development)
+
+version: "3.8"
+
+services:
+  # ─── PostgreSQL Database ────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: ce-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: internship_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── Backend API ────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: ce-backend
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      PORT: 5001
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/internship_db
+      DIRECT_URL: postgresql://postgres:postgres@db:5432/internship_db
+      TZ: Europe/Lisbon
+      RESET_SECRET: dev-secret-key
+      UPLOAD_DIR: ./uploads
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/prisma:/app/prisma
+      - backend_node_modules:/app/node_modules
+      - backend_uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        npx prisma generate &&
+        (npx prisma migrate deploy 2>/dev/null || npx prisma db push --accept-data-loss) &&
+        npm run dev
+      "
+
+  # ─── Frontend Dev Server ───────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: ce-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:5001/api
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+    driver: local
+  backend_node_modules:
+    driver: local
+  backend_uploads:
+    driver: local
+  frontend_node_modules:
+    driver: local

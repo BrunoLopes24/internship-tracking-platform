@@ -1,0 +1,22 @@
+{
+  "name": "controlo-estagio",
+  "version": "1.0.0",
+  "description": "Full-stack internship management dashboard with hour tracking and Portuguese holiday support",
+  "private": true,
+  "scripts": {
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ..",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "db:migrate": "cd backend && npx prisma migrate deploy",
+    "db:seed": "cd backend && npx prisma db seed",
+    "db:studio": "cd backend && npx prisma studio"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
