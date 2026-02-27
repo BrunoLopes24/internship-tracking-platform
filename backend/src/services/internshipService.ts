@@ -122,7 +122,7 @@ export class InternshipService {
         // Generate any new alerts asynchronously (fire-and-forget)
         this.checkAndCreateAlerts().catch(console.error);
 
-        return created;
+        return created as DailyLog;
     }
 
     /** Update an existing daily log. */
@@ -157,12 +157,13 @@ export class InternshipService {
         });
 
         this.checkAndCreateAlerts().catch(console.error);
-        return updated;
+        return updated as DailyLog;
     }
 
     /** Get all daily logs sorted by date. */
     async getDailyLogs(order: "asc" | "desc" = "desc"): Promise<DailyLog[]> {
-        return this.db.dailyLog.findMany({ orderBy: { logDate: order } });
+        const logs = await this.db.dailyLog.findMany({ orderBy: { logDate: order } });
+        return logs as DailyLog[];
     }
 
     /** Delete a daily log and its attachments. */
