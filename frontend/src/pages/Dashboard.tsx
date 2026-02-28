@@ -249,18 +249,10 @@ export default function Dashboard() {
 
     return (
         <div>
-            {/* Page header with "Novo Registo" button */}
-            <div className="page-header-actions">
-                <div>
-                    <h1 className="page-title">Dashboard</h1>
-                    <p className="page-subtitle">Acompanhamento do progresso do estágio</p>
-                </div>
-                <button className="btn btn-primary btn-lg" onClick={() => {
-                    setFormError('');
-                    setShowModal(true);
-                }}>
-                    ➕ Novo Registo
-                </button>
+            {/* Page Header (Button Moved) */}
+            <div className="page-header">
+                <h1 className="page-title">Dashboard</h1>
+                <p className="page-subtitle">O seu progresso de estágio atualizado</p>
             </div>
 
             {/* Alerts */}
@@ -293,100 +285,141 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* KPI Cards */}
-            <div className="kpi-grid">
-                <div className="card kpi-card kpi-card--primary">
-                    <div className="kpi-icon">⏱️</div>
-                    <div className="kpi-value">{data.totalHours.toFixed(1)}h</div>
-                    <div className="kpi-label">Horas Realizadas</div>
-                    <div className="kpi-sublabel">de 640h necessárias</div>
-                </div>
-                <div className="card kpi-card kpi-card--warning">
-                    <div className="kpi-icon">⏳</div>
-                    <div className="kpi-value">{data.remainingHours.toFixed(1)}h</div>
-                    <div className="kpi-label">Horas Restantes</div>
-                </div>
-                <div className="card kpi-card kpi-card--success">
-                    <div className="kpi-icon">📅</div>
-                    <div className="kpi-value">{data.totalWorkingDaysCompleted}</div>
-                    <div className="kpi-label">Dias Trabalhados</div>
-                    <div className="kpi-sublabel">Média: {data.averageHoursPerDay}h/dia</div>
-                </div>
-                <div className="card kpi-card kpi-card--info">
-                    <div className="kpi-icon">🏁</div>
-                    <div className="kpi-value">{new Date(data.estimatedEndDate).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' })}</div>
-                    <div className="kpi-label">Data Prevista de Fim</div>
-                    <div className="kpi-sublabel">{data.estimatedEndDate}</div>
-                </div>
-            </div>
+            {/* Main Asymmetric Layout */}
+            <div className="dashboard-layout">
+                {/* Left Column: Progress Hub & Charts */}
+                <div className="dashboard-main">
 
-            {/* Progress Bar */}
-            <div className="card progress-container">
-                <div className="progress-header">
-                    <span className="progress-title">Progresso do Estágio</span>
-                    <span className="progress-percentage">{data.percentageProgress.toFixed(1)}%</span>
-                </div>
-                <div className="progress-bar-bg">
-                    <div className="progress-bar-fill" style={{ width: `${Math.min(100, data.percentageProgress)}%` }} />
-                </div>
-                <div className="progress-milestones">
-                    <span>0h</span>
-                    <span style={{ position: 'relative', left: '-10%' }}>320h (Intercalar)</span>
-                    <span>640h (Final)</span>
-                </div>
-            </div>
+                    {/* Unified Progress Hub (Replaces 4 KPI Cards + Progress Card) */}
+                    <div className="card progress-hub">
+                        <div className="progress-hub-top">
+                            <div className="progress-hub-metrics">
+                                <div className="progress-hub-title">Horas Realizadas</div>
+                                <div className="progress-hub-hero">
+                                    {data.totalHours.toFixed(1)} <span className="progress-hub-total">/ 640h</span>
+                                </div>
 
-            {/* Charts */}
-            <div className="charts-grid">
-                <div className="card chart-card">
-                    <div className="chart-title">📊 Resumo Semanal</div>
-                    <div style={{ height: 250 }}>
-                        {data.weeklyHours.length > 0 ? (
-                            <Bar data={weeklyChartData} options={chartOptions} />
-                        ) : (
-                            <div className="empty-state"><p>Sem dados semanais ainda</p></div>
-                        )}
-                    </div>
-                </div>
-                <div className="card chart-card">
-                    <div className="chart-title">📈 Resumo Mensal</div>
-                    <div style={{ height: 250 }}>
-                        {data.monthlyHours.length > 0 ? (
-                            <Bar data={monthlyChartData} options={chartOptions} />
-                        ) : (
-                            <div className="empty-state"><p>Sem dados mensais ainda</p></div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Calendar */}
-            <div className="card" style={{ marginBottom: 'var(--space-xl)' }}>
-                <div className="chart-title">📅 Calendário de Estágio</div>
-                <div className="calendar-nav">
-                    <button onClick={() => setCalMonth((prev) => {
-                        const m = prev.month - 1;
-                        return m < 0 ? { year: prev.year - 1, month: 11 } : { year: prev.year, month: m };
-                    })}>← Anterior</button>
-                    <span className="calendar-month-label">{monthNames[calMonth.month]} {calMonth.year}</span>
-                    <button onClick={() => setCalMonth((prev) => {
-                        const m = prev.month + 1;
-                        return m > 11 ? { year: prev.year + 1, month: 0 } : { year: prev.year, month: m };
-                    })}>Seguinte →</button>
-                </div>
-                <div className="calendar-grid">
-                    {dayHeaders.map((d) => (<div key={d} className="calendar-header">{d}</div>))}
-                    {calendarDays.map((cell, i) => (
-                        <div key={i} className={cell.classes} title={cell.tooltip}>
-                            {cell.day > 0 ? cell.day : ''}
+                                <div className="progress-hub-secondary">
+                                    <div className="hub-stat">
+                                        <span className="hub-stat-label">Concluído</span>
+                                        <span className="hub-stat-value" style={{ color: 'var(--accent-primary)' }}>{data.percentageProgress.toFixed(1)}%</span>
+                                    </div>
+                                    <div className="hub-stat">
+                                        <span className="hub-stat-label">Restante</span>
+                                        <span className="hub-stat-value">{data.remainingHours.toFixed(1)}h</span>
+                                    </div>
+                                    <div className="hub-stat">
+                                        <span className="hub-stat-label">Dias Trabalhados</span>
+                                        <span className="hub-stat-value">{data.totalWorkingDaysCompleted} dias <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>({data.averageHoursPerDay}h/dia)</span></span>
+                                    </div>
+                                    <div className="hub-stat">
+                                        <span className="hub-stat-label">Fim Previsto</span>
+                                        <span className="hub-stat-value">{new Date(data.estimatedEndDate).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' })}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    ))}
+
+                        {/* Enhanced Progress Indicator */}
+                        <div className="progress-bar-container mt-md">
+                            <div className="progress-track">
+                                <div
+                                    className={`progress-fill ${data.percentageProgress > 99 ? 'done' : data.percentageProgress > 50 ? 'mid' : ''}`}
+                                    style={{ width: `${Math.min(100, data.percentageProgress)}%` }}
+                                />
+                            </div>
+                            <div className="progress-milestones">
+                                <span>Início</span>
+                                <span style={{ position: 'relative', left: '-10%' }}>Avaliação (320h)</span>
+                                <span>Fim (640h)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Lighter Charts */}
+                    <div className="charts-grid">
+                        <div className="chart-card">
+                            <div className="chart-title">Resumo Semanal</div>
+                            <div style={{ height: 220 }}>
+                                {data.weeklyHours.length > 0 ? (
+                                    <Bar data={weeklyChartData} options={chartOptions} />
+                                ) : (
+                                    <div className="empty-state"><p>Sem dados semanais ainda</p></div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="chart-card">
+                            <div className="chart-title">Resumo Mensal</div>
+                            <div style={{ height: 220 }}>
+                                {data.monthlyHours.length > 0 ? (
+                                    <Bar data={monthlyChartData} options={chartOptions} />
+                                ) : (
+                                    <div className="empty-state"><p>Sem dados mensais ainda</p></div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="calendar-legend">
-                    <div className="calendar-legend-item"><span className="legend-dot legend-dot--worked" /><span>Trabalhado</span></div>
-                    <div className="calendar-legend-item"><span className="legend-dot legend-dot--holiday" /><span>Feriado</span></div>
-                    <div className="calendar-legend-item"><span className="legend-dot legend-dot--today" /><span>Hoje</span></div>
+
+                {/* Right Column: Actions & Calendar Context */}
+                <div className="dashboard-sidebar">
+
+                    {/* Primary Desktop Action */}
+                    <div className="desktop-only-cta" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+                        <button
+                            className="btn btn-primary btn-lg"
+                            style={{ width: '100%', padding: 'var(--space-md)' }}
+                            onClick={() => {
+                                setFormError('');
+                                setShowModal(true);
+                            }}
+                        >
+                            ➕ Registar Horas
+                        </button>
+                    </div>
+
+                    {/* Compact Calendar */}
+                    <div className="calendar-card">
+                        <div className="chart-title" style={{ marginBottom: 'var(--space-md)' }}>Atividade Mensal</div>
+                        <div className="calendar-nav">
+                            <button onClick={() => setCalMonth((prev) => {
+                                const m = prev.month - 1;
+                                return m < 0 ? { year: prev.year - 1, month: 11 } : { year: prev.year, month: m };
+                            })}>← Mês anterior</button>
+                            <span className="calendar-month-label">{monthNames[calMonth.month]}</span>
+                            <button onClick={() => setCalMonth((prev) => {
+                                const m = prev.month + 1;
+                                return m > 11 ? { year: prev.year + 1, month: 0 } : { year: prev.year, month: m };
+                            })}>Mês seguinte →</button>
+                        </div>
+                        <div className="calendar-grid">
+                            {dayHeaders.map((d) => (<div key={d} className="calendar-header">{d}</div>))}
+                            {calendarDays.map((cell, i) => (
+                                <div key={i} className={cell.classes} title={cell.tooltip}>
+                                    {cell.day > 0 ? cell.day : ''}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="calendar-legend">
+                            <div className="calendar-legend-item"><span className="legend-dot legend-dot--worked" /><span>Trabalho</span></div>
+                            <div className="calendar-legend-item"><span className="legend-dot legend-dot--holiday" /><span>Feriado</span></div>
+                            <div className="calendar-legend-item"><span className="legend-dot legend-dot--today" /><span>Hoje</span></div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            {/* Mobile Sticky Button */}
+            <div className="mobile-sticky-cta">
+                <button
+                    className="btn btn-primary btn-lg shadow-lg"
+                    onClick={() => {
+                        setFormError('');
+                        setShowModal(true);
+                    }}
+                >
+                    ➕ Registar Horas
+                </button>
             </div>
 
             {/* ─── New Log Modal ─── */}

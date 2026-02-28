@@ -16,6 +16,7 @@ function App() {
     const [isConfigured, setIsConfigured] = useState(false);
     const [loading, setLoading] = useState(true);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     useEffect(() => {
         apiFetch('/config')
@@ -34,84 +35,110 @@ function App() {
 
     return (
         <Router>
-            <div className="app">
-                {/* ─── Navbar ─── */}
-                <nav className="navbar">
-                    <div className="nav-container">
-                        <NavLink to="/" className="nav-logo">
-                            📊 StageSync
-                        </NavLink>
+            <div className={`app-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
 
-                        <button
-                            className="nav-hamburger"
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            aria-label="Menu"
-                        >
-                            {mobileMenuOpen ? '✕' : '☰'}
-                        </button>
+                {/* ─── Mobile Header ─── */}
+                <div className="mobile-header">
+                    <span className="mobile-logo">📊 StageSync</span>
+                    <button
+                        className="nav-hamburger"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        aria-label="Menu"
+                    >
+                        {mobileMenuOpen ? '✕' : '☰'}
+                    </button>
+                </div>
 
-                        <div className={`nav-menu ${mobileMenuOpen ? 'open' : ''}`}>
-                            {isConfigured && (
-                                <>
-                                    <NavLink
-                                        to="/"
-                                        end
-                                        className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                    >
-                                        Painel
-                                    </NavLink>
-                                    <NavLink
-                                        to="/log"
-                                        className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                    >
-                                        Registo Diário
-                                    </NavLink>
-                                    <NavLink
-                                        to="/reports"
-                                        className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                    >
-                                        Relatórios
-                                    </NavLink>
-                                </>
-                            )}
-                            <NavLink
-                                to="/config"
-                                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                Configuração
-                            </NavLink>
-                        </div>
+                {/* Mobile Overlay */}
+                {mobileMenuOpen && (
+                    <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)} />
+                )}
 
-                        <div className="nav-actions">
-                            {/* Theme toggle removed per user request */}
-                        </div>
-                    </div>
-                </nav>
-
-                {/* ─── Main content ─── */}
-                <main className="main-content">
-                    <Routes>
-                        {!isConfigured ? (
-                            <Route path="*" element={<Configuration onConfigured={() => setIsConfigured(true)} />} />
-                        ) : (
+                {/* ─── Lateral Sidebar ─── */}
+                <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+                    <nav className="sidebar-nav">
+                        {isConfigured && (
                             <>
-                                <Route path="/" element={<Dashboard />} />
-                                <Route path="/log" element={<DailyLog />} />
-                                <Route path="/reports" element={<Reports />} />
-                                <Route path="/config" element={<Configuration onConfigured={() => setIsConfigured(true)} />} />
+                                <NavLink
+                                    to="/"
+                                    end
+                                    className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    title={isSidebarCollapsed ? "Painel" : ""}
+                                >
+                                    <span className="sidebar-icon">📊</span>
+                                    <span className="sidebar-text">Painel</span>
+                                </NavLink>
+                                <NavLink
+                                    to="/log"
+                                    className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    title={isSidebarCollapsed ? "Registo Diário" : ""}
+                                >
+                                    <span className="sidebar-icon">📝</span>
+                                    <span className="sidebar-text">Registo Diário</span>
+                                </NavLink>
+                                <NavLink
+                                    to="/reports"
+                                    className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    title={isSidebarCollapsed ? "Relatórios" : ""}
+                                >
+                                    <span className="sidebar-icon">📄</span>
+                                    <span className="sidebar-text">Relatórios</span>
+                                </NavLink>
                             </>
                         )}
-                    </Routes>
-                </main>
+                        <NavLink
+                            to="/config"
+                            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                            onClick={() => setMobileMenuOpen(false)}
+                            title={isSidebarCollapsed ? "Configuração" : ""}
+                        >
+                            <span className="sidebar-icon">⚙️</span>
+                            <span className="sidebar-text">Configuração</span>
+                        </NavLink>
 
-                {/* ─── Footer ─── */}
-                <footer className="footer">
-                    <p>© 2026 StageSync. Todos os direitos reservados.</p>
-                </footer>
+                        {/* Collapse Toggle */}
+                        <div style={{ marginTop: 'var(--space-md)', padding: '0 var(--space-md)', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button
+                                className="sidebar-toggle desktop-only"
+                                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                                title={isSidebarCollapsed ? "Expandir Menu" : "Recolher Menu"}
+                            >
+                                {isSidebarCollapsed ? '»' : '«'}
+                            </button>
+                        </div>
+                    </nav>
+                </aside>
+
+                {/* ─── Main Content Wrapper ─── */}
+                <div className="main-wrapper">
+                    {/* ─── Top Navbar (Desktop only, Mobile handled by mobile-header) ─── */}
+                    <div className="desktop-topbar">
+                        <span className="topbar-logo">StageSync</span>
+                    </div>
+
+                    <main className="main-content">
+                        <Routes>
+                            {!isConfigured ? (
+                                <Route path="*" element={<Configuration onConfigured={() => setIsConfigured(true)} />} />
+                            ) : (
+                                <>
+                                    <Route path="/" element={<Dashboard />} />
+                                    <Route path="/log" element={<DailyLog />} />
+                                    <Route path="/reports" element={<Reports />} />
+                                    <Route path="/config" element={<Configuration onConfigured={() => setIsConfigured(true)} />} />
+                                </>
+                            )}
+                        </Routes>
+                    </main>
+
+                    {/* ─── Footer ─── */}
+                    <footer className="footer">
+                        <p>© 2026 StageSync. Todos os direitos reservados.</p>
+                    </footer>
+                </div>
             </div>
         </Router>
     );
