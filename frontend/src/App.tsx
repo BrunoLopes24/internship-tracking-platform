@@ -87,13 +87,7 @@ function App() {
                         </div>
 
                         <div className="nav-actions">
-                            <button
-                                className="theme-toggle"
-                                onClick={toggleTheme}
-                                title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
-                            >
-                                {theme === 'dark' ? '☀️' : '🌙'}
-                            </button>
+                            {/* Theme toggle removed per user request */}
                         </div>
                     </div>
                 </nav>
